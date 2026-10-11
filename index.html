@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Адмін-панель каталогу товарів</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-container">
+    <div class="header-bar">
+        <h1>Панель адміністрування товарів</h1>
+        <span style="font-size: 13px; color: var(--text-muted);">CRUD Модуль</span>
+    </div>
+    <div class="grid-layout">
+        <div class="card">
+            <h2 class="card-title" id="form-header">Новий товар</h2>
+            <div id="error-box" class="error-msg"></div>
+            <form id="product-form">
+                <input type="hidden" id="edit-idx" value="-1">
+                <div class="form-group">
+                    <label>ID товару</label>
+                    <input type="number" id="field-id" placeholder="Напр. 101" required>
+                </div>
+                <div class="form-group">
+                    <label>Назва товару</label>
+                    <input type="text" id="field-name" placeholder="Назва модифікації..." required>
+                </div>
+                <div class="form-group">
+                    <label>Опис товару</label>
+                    <textarea id="field-desc" rows="3" placeholder="Короткі характеристики..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Ціна (грн)</label>
+                    <input type="number" step="0.01" id="field-price" placeholder="0.00" required>
+                </div>
+                <div class="form-group">
+                    <label>Дата додавання</label>
+                    <input type="date" id="field-date" required>
+                </div>
+                <button type="submit" class="btn" id="save-btn">Зберегти товар</button>
+                <button type="button" id="cancel-btn" class="btn" style="background:#475569; margin-top:8px; display:none;">Скасувати</button>
+            </form>
+        </div>
+        <div class="card">
+            <div class="toolbar">
+                <h2 class="card-title" style="margin:0;">Каталог товарів</h2>
+                <div>
+                    <span style="font-size:12px; color:var(--text-muted); margin-right:8px;">Сортувати:</span>
+                    <button class="btn-sort" onclick="sortData('name')">За назвою</button>
+                    <button class="btn-sort" onclick="sortData('price')">За ціною</button>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Назва</th>
+                        <th>Опис</th>
+                        <th>Ціна</th>
+                        <th>Дата</th>
+                        <th>Дії</th>
+                    </tr>
+                </thead>
+                <tbody id="catalog-rows"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+    let catalogItems = JSON.parse(localStorage.getItem('admin_catalog_v3')) || [
+        { id: 101, name: 'Монітор Dell UltraSharp 27', description: '4K IPS матриця, USB-C хаб', price: 18500, dateAdded: '2026-03-01' },
+        { id: 102, name: 'Механічна клавіатура Keychron', description: 'Бездротова, перемикачі Red', price: 4200, dateAdded: '2026-03-04' },
+        { id: 103, name: 'Мишка Logitech MX Master 3S', description: 'Ергономічна, безшумні кліки', price: 3900, dateAdded: '2026-03-08' }
+    ];
+    const form = document.getElementById('product-form');
+    const errBox = document.getElementById('error-box');
+    const tbody = document.getElementById('catalog-rows');
+    function syncStorageAndRender() {
+        localStorage.setItem('admin_catalog_v3', JSON.stringify(catalogItems));
+        renderCatalog();
+    }
+    function renderCatalog() {
+        tbody.innerHTML = '';
+        catalogItems.forEach((item, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><b>${item.id}</b></td>
+                <td>${item.name}</td>
+                <td style="font-size:13px; color:#94a3b8;">${item.description}</td>
+                <td><span class="badge-price">${item.price} ₴</span></td>
+                <td style="font-size:13px;">${item.dateAdded}</td>
+                <td>
+                    <button class="action-btn act-edit" onclick="startEdit(${index})">Редагувати</button>
+                    <button class="action-btn act-del" onclick="deleteItem(${index})">Видалити</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        errBox.style.display = 'none';
+        const idVal = parseInt(document.getElementById('field-id').value);
+        const nameVal = document.getElementById('field-name').value.trim();
+        const descVal = document.getElementById('field-desc').value.trim();
+        const priceVal = parseFloat(document.getElementById('field-price').value);
+        const dateVal = document.getElementById('field-date').value;
+        const editIdx = parseInt(document.getElementById('edit-idx').value);
+        if (priceVal < 0) {
+            showError('Ціна не може бути від’ємною!');
+            return;
+        }
+        if (editIdx === -1) {
+            if (catalogItems.some(i => i.id === idVal)) {
+                showError('Товар з таким ID вже зареєстрований!');
+                return;
+            }
+            catalogItems.push({ id: idVal, name: nameVal, description: descVal, price: priceVal, dateAdded: dateVal });
+            syncStorageAndRender();
+        } else {
+            catalogItems[editIdx] = { id: idVal, name: nameVal, description: descVal, price: priceVal, dateAdded: dateVal };
+            renderCatalog();
+        }
+        clearForm();
+    });
+    function startEdit(idx) {
+        const item = catalogItems[idx];
+        document.getElementById('field-id').value = item.id;
+        document.getElementById('field-name').value = item.name;
+        document.getElementById('field-desc').value = item.description;
+        document.getElementById('field-price').value = item.price;
+        document.getElementById('field-date').value = item.dateAdded;
+        document.getElementById('edit-idx').value = idx;
+        document.getElementById('form-header').innerText = 'Редагувати товар';
+        document.getElementById('save-btn').innerText = 'Оновити дані';
+        document.getElementById('cancel-btn').style.display = 'block';
+    }
+    function deleteItem(idx) {
+        if (confirm('Видалити цей товар з системи?')) {
+            catalogItems.splice(idx, 1);
+            syncStorageAndRender();
+        }
+    }
+    function sortData(key) {
+        catalogItems.sort((a, b) => {
+            if (typeof a[key] === 'string') {
+                return a[key].localeCompare(b[key]);
+            }
+            return a[key] - b[key];
+        });
+        renderCatalog();
+    }
+    function showError(text) {
+        errBox.innerText = text;
+        errBox.style.display = 'block';
+    }
+    function clearForm() {
+        form.reset();
+        document.getElementById('edit-idx').value = -1;
+        document.getElementById('form-header').innerText = 'Новий товар';
+        document.getElementById('save-btn').innerText = 'Зберегти товар';
+        document.getElementById('cancel-btn').style.display = 'none';
+        errBox.style.display = 'none';
+    }
+    document.getElementById('cancel-btn').addEventListener('click', clearForm);
+    renderCatalog();
+</script>
+</body>
+</html>a
