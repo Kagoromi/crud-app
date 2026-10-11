@@ -9,13 +9,16 @@
     --danger: #ef4444;
     --warning: #f59e0b;
 }
+html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background-color: var(--bg-color);
+}
 body {
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background-color: var(--bg-color);
     color: var(--text-color);
-    margin: 0;
     padding: 30px 20px;
-    min-height: 100vh;
     box-sizing: border-box;
 }
 .app-container {
@@ -47,6 +50,7 @@ body {
     border-radius: 12px;
     padding: 20px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    min-width: 0;
 }
 .card-title {
     font-size: 16px;
@@ -113,19 +117,26 @@ table {
     border-collapse: collapse;
     font-size: 14px;
 }
-th {
-    text-align: left;
-    padding: 12px;
-    color: var(--text-muted);
+th, td {
+    padding: 12px 8px;
     border-bottom: 1px solid var(--border-color);
+    text-align: left;
+}
+th {
+    color: var(--text-muted);
     font-weight: 500;
     font-size: 13px;
 }
 td {
-    padding: 12px;
-    border-bottom: 1px solid #1e293b;
     color: #cbd5e1;
+    vertical-align: middle;
 }
+th:nth-child(1), td:nth-child(1) { width: 45px; }
+th:nth-child(2), td:nth-child(2) { width: 170px; word-break: break-word; }
+th:nth-child(3), td:nth-child(3) { word-break: break-word; }
+th:nth-child(4), td:nth-child(4) { width: 105px; }
+th:nth-child(5), td:nth-child(5) { width: 95px; }
+th:nth-child(6), td:nth-child(6) { width: 90px; }
 tr:hover td { background-color: rgba(255, 255, 255, 0.02); }
 .badge-price {
     background: rgba(79, 70, 229, 0.15);
@@ -134,15 +145,18 @@ tr:hover td { background-color: rgba(255, 255, 255, 0.02); }
     border-radius: 4px;
     font-weight: 600;
     white-space: nowrap;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 .action-btn {
     background: transparent;
     border: none;
     cursor: pointer;
     font-size: 13px;
-    margin-right: 8px;
-    padding: 2px 6px;
+    display: block;
+    padding: 3px 0;
+    text-align: left;
 }
 .act-edit { color: var(--warning); }
 .act-del { color: var(--danger); }
