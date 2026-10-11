@@ -120,8 +120,8 @@
             syncStorageAndRender();
         } else {
             catalogItems[editIdx] = { id: idVal, name: nameVal, description: descVal, price: priceVal, dateAdded: dateVal };
-            renderCatalog();
-        }
+            syncStorageAndRender();
+}
         clearForm();
     });
     function startEdit(idx) {
